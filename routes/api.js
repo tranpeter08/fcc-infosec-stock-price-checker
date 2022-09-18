@@ -109,12 +109,12 @@ module.exports = function (app) {
         return res.status(status).json({ error: data });
       }
 
+      console.log(error);
+
       if (typeof error === 'string') {
-        console.log(error);
         return res.status(400).send({ error });
       }
 
-      console.log(error);
       res.send({ error: error.message });
     }
   });
