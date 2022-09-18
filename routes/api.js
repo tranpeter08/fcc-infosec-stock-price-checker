@@ -2,10 +2,9 @@
 const {
   createLike,
   hasLike,
-  createHash,
   getLikeCount,
-  getStockData,
 } = require('../database/stockLikeService');
+const { createHash, getStockData } = require('../utils/stocks');
 const { AxiosError } = require('axios');
 
 module.exports = function (app) {
