@@ -6,6 +6,7 @@ const {
   getLikeCount,
   getStockData,
 } = require('../database/stockLikeService');
+const { AxiosError } = require('axios');
 
 module.exports = function (app) {
   app.route('/api/stock-prices').get(async function (req, res) {
@@ -97,6 +98,22 @@ module.exports = function (app) {
 
       res.status(200).json({ stockData: output });
     } catch (error) {
+      if (error instanceof AxiosError) {
+        const {
+          response: { status, data },
+          code,
+        } = error;
+
+        console.log({ data, code, status });
+
+        return res.status(status).json({ error: data });
+      }
+
+      if (typeof error === 'string') {
+        console.log(error);
+        return res.status(400).send({ error });
+      }
+
       console.log(error);
       res.send({ error: error.message });
     }
