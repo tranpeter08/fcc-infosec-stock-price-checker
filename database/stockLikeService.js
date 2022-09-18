@@ -1,69 +1,61 @@
 const supabase = require('./index');
-const table = 'stock_likes';
-const axios = require('axios').default;
-const crypto = require('crypto');
+const table =
+  process.env.NODE_ENV === 'test' ? 'stock_likes_test' : 'stock_likes';
 
-exports.createHash = function (ip) {
-  const secret = process.env.HASH_SECRET;
-  const hash = crypto.createHmac('sha256', secret).update(ip).digest('hex');
+function stockLikesService(tableName) {
+  const table = tableName;
 
-  return hash;
-};
+  return {
+    hasLike: async function (hash, symbol) {
+      // console.log('hasLike was called');
+      const { data, error } = await supabase
+        .from(table)
+        .select('hash', 'symbol')
+        .match({
+          hash,
+          symbol,
+        });
 
-exports.getStockData = async function (symbol) {
-  console.log('getting stock data for ', symbol);
-  const url = `https://stock-price-checker-proxy.freecodecamp.rocks/v1/stock/${symbol}/quote`;
-  const { data } = await axios.get(url);
+      if (error) throw error;
 
-  if (typeof data === 'string') {
-    throw data;
-  }
+      // console.log(`has like data:`, data);
+      const hasLikes = Array.isArray(data) && data.length !== 0;
 
-  const { symbol: sym, latestPrice } = data;
+      return hasLikes;
+    },
+    createLike: async function (hash, symbol) {
+      // console.log('create like');
+      const { data, error } = await supabase
+        .from(table)
+        .insert([{ hash, symbol }]);
 
-  return { symbol: sym, price: latestPrice };
-};
+      if (error) throw error;
 
-exports.hasLike = async function (hash, symbol) {
-  console.log('hasLike was called');
-  const { data, error } = await supabase
-    .from(table)
-    .select('hash', 'symbol')
-    .match({
-      hash,
-      symbol,
-    });
+      // console.log(`created like for stock `, symbol);
+    },
 
-  if (error) throw error;
+    getLikeCount: async function (symbol) {
+      // console.log('get like count for ', symbol);
+      const { data, error } = await supabase
+        .from(table)
+        .select('symbol')
+        .eq('symbol', symbol);
 
-  console.log(`has like data:`, data);
-  const hasLikes = Array.isArray(data) && data.length !== 0;
+      // console.log('like count data', data);
 
-  return hasLikes;
-};
+      if (error) throw error;
 
-exports.createLike = async function (hash, symbol) {
-  console.log('create like');
-  const { data, error } = await supabase.from(table).insert([{ hash, symbol }]);
+      if (data === null) throw 'like count error';
 
-  if (error) throw error;
+      // console.log(`like count of ${symbol} =`, data);
+      return data.length;
+    },
 
-  console.log(`created like for stock `, symbol);
-};
+    truncateTable: async function () {
+      await supabase.from(table).delete().neq('hash', 'null');
+    },
+  };
+}
 
-exports.getLikeCount = async function (symbol) {
-  console.log('get like count for ', symbol);
-  const { data, error } = await supabase
-    .from(table)
-    .select('symbol')
-    .eq('symbol', symbol);
-
-  console.log('like count data', data);
-
-  if (error) throw error;
-
-  if (data === null) throw 'like count error';
-
-  console.log(`like count of ${symbol} =`, data);
-  return data.length;
-};
+exports.stockLikesService = stockLikesService;
+module.exports = stockLikesService(table);
