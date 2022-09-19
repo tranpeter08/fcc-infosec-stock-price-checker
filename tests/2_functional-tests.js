@@ -9,18 +9,18 @@ const urlEndpoint = '/api/stock-prices';
 
 suite('Functional Tests', function () {
   test('Viewing one stock: GET request to /api/stock-prices/', (done) => {
-    const symbol = 'a';
+    const stock = 'a';
     const propery = 'stockData';
 
     chai
       .request(server)
       .get(urlEndpoint)
-      .query({ symbol })
+      .query({ stock})
       .then((res) => {
         assert.property(res.body, propery);
         const { stockData } = res.body;
 
-        assert.typeOf(stockData.symbol, 'string');
+        assert.typeOf(stockData.stock, 'string');
         assert.typeOf(stockData.price, 'number');
         assert.typeOf(stockData.likes, 'number');
 
@@ -29,18 +29,18 @@ suite('Functional Tests', function () {
   });
 
   test('Viewing one stock and liking it: GET request to /api/stock-prices/', (done) => {
-    const symbol = 'a';
+    const stock = 'a';
     const propery = 'stockData';
 
     chai
       .request(server)
       .get(urlEndpoint)
-      .query({ symbol, like: 'true' })
+      .query({ stock, like: 'true' })
       .then((res) => {
         assert.property(res.body, propery);
         const { stockData } = res.body;
 
-        assert.typeOf(stockData.symbol, 'string');
+        assert.typeOf(stockData.stock, 'string');
         assert.typeOf(stockData.price, 'number');
         assert.typeOf(stockData.likes, 'number');
 
@@ -53,24 +53,24 @@ suite('Functional Tests', function () {
   });
 
   test('Viewing the same stock and liking it again: GET request to /api/stock-prices/', (done) => {
-    const symbol = 't';
+    const stock = 't';
     const propery = 'stockData';
 
     chai
       .request(server)
       .get(urlEndpoint)
-      .query({ symbol, like: 'true' })
+      .query({ stock, like: 'true' })
       .then(() => {
         return chai
           .request(server)
           .get(urlEndpoint)
-          .query({ symbol, like: 'true' });
+          .query({ stock, like: 'true' });
       })
       .then((res) => {
         assert.property(res.body, propery);
         const { stockData } = res.body;
 
-        assert.typeOf(stockData.symbol, 'string');
+        assert.typeOf(stockData.stock, 'string');
         assert.typeOf(stockData.price, 'number');
         assert.typeOf(stockData.likes, 'number');
 
@@ -84,7 +84,7 @@ suite('Functional Tests', function () {
       .catch((e) => {
         console.log(e);
       });
-  });
+  }).timeout(3000);
 
   test('Viewing two stocks: GET request to /api/stock-prices/', (done) => {
     const symbols = ['a', 't'];
@@ -92,13 +92,13 @@ suite('Functional Tests', function () {
     chai
       .request(server)
       .get(urlEndpoint)
-      .query({ symbol: symbols })
+      .query({ stock: symbols })
       .then((res) => {
-        const { stockData } = res.body;
+        const stockData = res.body;
         assert.isArray(stockData);
 
         for (const data of stockData) {
-          assert.typeOf(data.symbol, 'string');
+          assert.typeOf(data.stock, 'string');
           assert.typeOf(data.price, 'number');
           assert.typeOf(data.rel_like, 'number');
         }
@@ -118,13 +118,13 @@ suite('Functional Tests', function () {
     chai
       .request(server)
       .get(urlEndpoint)
-      .query({ symbol: symbols, like: 'true' })
+      .query({ stock: symbols, like: 'true' })
       .then((res) => {
-        const { stockData } = res.body;
+        const stockData = res.body;
         assert.isArray(stockData);
 
         for (const data of stockData) {
-          assert.typeOf(data.symbol, 'string');
+          assert.typeOf(data.stock, 'string');
           assert.typeOf(data.price, 'number');
           assert.typeOf(data.rel_like, 'number');
         }

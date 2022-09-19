@@ -10,7 +10,7 @@ const { AxiosError } = require('axios');
 module.exports = function (app) {
   app.route('/api/stock-prices').get(async function (req, res) {
     try {
-      const { symbol, like = 'false' } = req.query;
+      const { stock: symbol, like = 'false' } = req.query;
       const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
       const hash = createHash(ip);
       let stocks = [];
@@ -80,8 +80,11 @@ module.exports = function (app) {
 
       // if only 1 item in stock data, append "likes" property
       if (stocksData.length == 1) {
-        output = stocksData[0];
-        output.likes = responses[0];
+        output = {}
+        output.stockData = stocksData[0];
+        output.stockData.stock = stocksData[0].symbol;
+        delete output.stockData.symbol;
+        output.stockData.likes = responses[0];
       } else {
         // if more than 1 item in stock data, find difference in like count and
         // append rel_likes property to each
@@ -90,12 +93,14 @@ module.exports = function (app) {
 
         for (const stock of stocksData) {
           stock.rel_like = diff;
+          stock.stock = stock.symbol;
+          delete stock.symbol
         }
 
         output = stocksData;
       }
 
-      res.status(200).json({ stockData: output });
+      res.status(200).json(output);
     } catch (error) {
       if (error instanceof AxiosError) {
         const {
