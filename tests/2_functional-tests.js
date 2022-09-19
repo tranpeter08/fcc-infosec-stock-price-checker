@@ -17,6 +17,7 @@ suite('Functional Tests', function () {
       .get(urlEndpoint)
       .query({ stock})
       .then((res) => {
+        console.log(res.body)
         assert.property(res.body, propery);
         const { stockData } = res.body;
 
@@ -94,13 +95,13 @@ suite('Functional Tests', function () {
       .get(urlEndpoint)
       .query({ stock: symbols })
       .then((res) => {
-        const stockData = res.body;
+        const {stockData} = res.body;
         assert.isArray(stockData);
 
         for (const data of stockData) {
           assert.typeOf(data.stock, 'string');
           assert.typeOf(data.price, 'number');
-          assert.typeOf(data.rel_like, 'number');
+          assert.typeOf(data.rel_likes, 'number');
         }
 
         return truncateTable().then(() => {
@@ -120,13 +121,13 @@ suite('Functional Tests', function () {
       .get(urlEndpoint)
       .query({ stock: symbols, like: 'true' })
       .then((res) => {
-        const stockData = res.body;
+        const {stockData} = res.body;
         assert.isArray(stockData);
 
         for (const data of stockData) {
           assert.typeOf(data.stock, 'string');
           assert.typeOf(data.price, 'number');
-          assert.typeOf(data.rel_like, 'number');
+          assert.typeOf(data.rel_likes, 'number');
         }
 
         return truncateTable().then(() => {

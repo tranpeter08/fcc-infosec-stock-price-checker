@@ -80,11 +80,13 @@ module.exports = function (app) {
 
       // if only 1 item in stock data, append "likes" property
       if (stocksData.length == 1) {
-        output = {}
-        output.stockData = stocksData[0];
-        output.stockData.stock = stocksData[0].symbol;
-        delete output.stockData.symbol;
-        output.stockData.likes = responses[0];
+        output = stocksData[0];
+        output.stock = stocksData[0].symbol;
+        output.likes = responses[0];
+        delete output.symbol;
+
+        res.status(200).json({stockData:output});
+        return;
       } else {
         // if more than 1 item in stock data, find difference in like count and
         // append rel_likes property to each
@@ -92,15 +94,18 @@ module.exports = function (app) {
         const diff = like1 - like2;
 
         for (const stock of stocksData) {
-          stock.rel_like = diff;
+          stock.rel_likes = diff;
           stock.stock = stock.symbol;
           delete stock.symbol
         }
 
         output = stocksData;
+
+        res.status(200).json({stockData: output});
+        return;
       }
 
-      res.status(200).json(output);
+      
     } catch (error) {
       if (error instanceof AxiosError) {
         const {
